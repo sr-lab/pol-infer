@@ -1,7 +1,7 @@
 # pol-infer
 Inferring password composition policies from breached user credential databases.
 
-![Logo](logo/logo.svg)
+![Logo](docs/svg/logo.svg)
 
 ## Overview
 Sometimes as security researchers we need to be able to work out the password composition policy that some publicly-available breached user credential database was created under. This tool is able to assist with this, even when the data is "contaminated" with passwords that do not comply with the policy.
@@ -105,14 +105,14 @@ python ./src/polinfer.py -h
 ```
 
 ## Generating Figures
-It's possible to use the utility to generate some interesting figures (included under `/figures`). Matplotlib is used for this purpose. Here's an example:
+It's possible to use the utility to generate some interesting figures (included under `/docs/figures`). Matplotlib is used for this purpose. Here's an example:
 
-![Figure](figures/000webhost_lengthsAccum.svg)
+![Figure](docs/figures/000webhost_lengthsAccum.svg)
 
 The above figure was generated like this:
 
 ```bash
-python ./src/polinfer.py -t '000webhost: $mult(l)$ for $l=1$ to $l=20$' -x 'Length ($l$)' -y '$mult(l)$' -o ./figures/000webhost_lengthsAccum.svg -s ./features/000webhost.json
+python ./src/polinfer.py -t '000webhost: $mult(l)$ for $l=1$ to $l=20$' -x 'Length ($l$)' -y '$mult(l)$' -o ./docs/figures/000webhost_lengthsAccum.svg -s ./features/000webhost.json
 ```
 
 ## Acknowledgements
