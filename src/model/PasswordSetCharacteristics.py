@@ -18,6 +18,7 @@ class PasswordSetCharacteristics:
         self.digit_counts_cumulative = {}
         self.symbol_counts = {}
         self.symbol_counts_cumulative = {}
+        self.symbol_counts_cumulative_desc = {}
         self.class_counts = {}
         self.word_counts = {}
         self.num_with_lowers = 0
@@ -54,6 +55,22 @@ class PasswordSetCharacteristics:
             output[i] = total
         return output
 
+    def desc_accumulate(self, dict):
+        """ Turns a discrete count dictionary into a cumulative one in a descending manner.
+
+        Args:
+            dict (dict): The count dictionary.
+        Returns:
+            dict: The descending cumulative dictionary.
+        """
+        total = 0
+        output = {}
+        for i in range(self.max_key(dict), -1, -1):
+            if i in dict:
+                total += dict[i]
+            output[i] = total
+        return output
+
     def dict(self):
         """ Transforms this object into a dictionary for JSON serialization.
 
@@ -63,14 +80,19 @@ class PasswordSetCharacteristics:
         return {
             'lengths': self.lengths,
             'lengthsAccum': self.accumulate(self.lengths),
+            'lengthsAccumDesc': self.desc_accumulate(self.lengths),
             'lowerCounts': self.lower_counts,
             'lowerCountsAccum': self.accumulate(self.lower_counts),
+            'lowerCountsAccumDesc': self.desc_accumulate(self.lower_counts),
             'upperCounts': self.upper_counts,
             'upperCountsAccum': self.accumulate(self.upper_counts),
+            'upperCountsAccumDesc': self.desc_accumulate(self.upper_counts),
             'digitCounts': self.digit_counts,
             'digitCountsAccum': self.accumulate(self.digit_counts),
+            'digitCountsAccumDesc': self.desc_accumulate(self.digit_counts),
             'symbolCounts': self.symbol_counts,
             'symbolCountsAccum': self.accumulate(self.symbol_counts),
+            'symbolCountsAccumDesc': self.desc_accumulate(self.symbol_counts),
             'classCounts': self.class_counts,
             'wordCounts': self.word_counts,
             'containing': {

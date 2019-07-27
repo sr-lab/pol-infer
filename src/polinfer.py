@@ -109,10 +109,23 @@ y_label = get_valued_arg('y')
 if not y_label is None:
     plt.ylabel(y_label)
 
+# Check descent mode.
+descent_mode = is_arg_passed('d')
+
 # Convert to points.
 points = to_points(raw)
 points = list(filter(lambda p: p[0] >= low_lim and p[0] <= high_lim, points)) # Enforce limits.
 print('Pulled points:', points)
+
+# Specify offset of critical number.
+offset = 1
+term = 'Lower'
+
+# Reverse points and invert critical number if in descent mode.
+if descent_mode:
+    points.reverse()
+    offset = -1
+    term = 'Upper'
 
 # Convert to deltas.
 deltas = []
@@ -126,9 +139,9 @@ print('Computed deltas:', deltas)
 # Print result.
 largest = reduce(lambda i, j: i if i[1] > j[1] else j, deltas)
 if largest[1] < OUTLIER_THRESHOLD:
-    print('Constraint on', key, 'unlikely to be present in policy.')
+    print(f'{term} constraint on', key, 'unlikely to be present in policy.')
 else:
-    print('Constraint on', key, 'inferred as', largest[0] + 1)
+    print(f'{term} constraint on', key, 'inferred as', largest[0] + offset)
 
 # Unpack deltas into arrays.
 x = [j for j,k in deltas]
