@@ -45,7 +45,7 @@ def print_usage(show_help_line=False):
     Args:
         show_help_line (bool): If true, information on help flag `-h` will be printed.
     """
-    print("Usage: python polinfer.py [-hklutxyos] <features_file>")
+    print("Usage: python polinfer.py [-hkblutxyos] <features_file>")
     print("Features file produced by extractfeatures.py expected.")
     if show_help_line:
         print("For extended help use '-h' option.")
@@ -58,6 +58,7 @@ def print_help():
     print("Options:")
     print("\t-h: Show this help screen")
     print("\t-k <key>: The key of the feature to use (default: lengthsAccum)")
+    print("\t-b <limit>: The threshold to use for outlier detection")
     print("\t-l <limit>: The lower limit of the feature to use (default: 1)")
     print("\t-u <limit>: The upper limit of the feature to use (default: 20)")
     print("\t-t <title>: The chart title")
@@ -66,9 +67,6 @@ def print_help():
     print("\t-o <path>: The file in which to place output figure")
     print("\t-s: Suppress chart output")
 
-
-# Specify outlier threshold.
-OUTLIER_THRESHOLD = 2
 
 # If no options specified, print usage and exit.
 if len(sys.argv) == 1:
@@ -89,6 +87,11 @@ if key is None:
 raw = {}
 with open(sys.argv[-1]) as f:
     raw = json.load(f)[key]
+
+# Read in outlier threshold, if passed.
+outlier_threshold = get_int_valued_arg('b')
+if outlier_threshold is None:
+    outlier_threshold = 2 # Default outlier threshold.
 
 # Read in lower and upper histogram limits, if passed.
 low_lim = get_int_valued_arg('l')
@@ -123,8 +126,7 @@ term = 'Lower'
 
 # Reverse points and invert critical number if in descent mode.
 if descent_mode:
-    points.reverse()
-    offset = -1
+    offset = 0
     term = 'Upper'
 
 # Convert to deltas.
@@ -132,13 +134,16 @@ deltas = []
 for i in range(0, len(points) - 1):
     j = points[i]
     k = points[i + 1]
-    mult = math.inf if j[1] == 0 else k[1] / j[1]
+    if descent_mode:
+        mult = math.inf if k[1] == 0 else j[1] / k[1]
+    else:
+        mult = math.inf if j[1] == 0 else k[1] / j[1]
     deltas.append((j[0], mult))
 print('Computed deltas:', deltas)
 
 # Print result.
 largest = reduce(lambda i, j: i if i[1] > j[1] else j, deltas)
-if largest[1] < OUTLIER_THRESHOLD:
+if largest[1] < outlier_threshold:
     print(f'{term} constraint on', key, 'unlikely to be present in policy.')
 else:
     print(f'{term} constraint on', key, 'inferred as', largest[0] + offset)
