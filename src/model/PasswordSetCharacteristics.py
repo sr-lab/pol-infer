@@ -44,7 +44,7 @@ class PasswordSetCharacteristics:
         output = {}
         keys = range(0, cls.max_key(dict) + 1)
         if inverse:
-            range(cls.max_key(dict), -1, -1) # Invert range if needed.
+            keys = range(cls.max_key(dict), -1, -1) # Invert range if needed.
         for i in keys:
             if i in dict:
                 total += dict[i] # Accumulate frequencies.

@@ -126,7 +126,7 @@ print('Pulled points:', points)
 offset = 1
 term = 'Lower'
 
-
+# Offset needs to change if we're finding upper bounds.
 if inv_cum_freq_mode:
     offset = 0
     term = 'Upper'
