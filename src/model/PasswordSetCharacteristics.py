@@ -6,27 +6,19 @@ class PasswordSetCharacteristics:
     """ Represents the characteristics of a set of passwords.
     """
 
-    def __init__(self):
+    def __init__ (self):
         """ Constructs a new instance of a representation of the characteristics of a set of passwords.
         """
         self.lengths = {}
         self.lower_counts = {}
-        self.lower_counts_cumulative = {}
         self.upper_counts = {}
-        self.upper_counts_cumulative = {}
         self.digit_counts = {}
-        self.digit_counts_cumulative = {}
         self.symbol_counts = {}
-        self.symbol_counts_cumulative = {}
-        self.symbol_counts_cumulative_desc = {}
         self.class_counts = {}
         self.word_counts = {}
-        self.num_with_lowers = 0
-        self.num_with_uppers = 0
-        self.num_with_digits = 0
-        self.num_with_symbols = 0
 
-    def max_key(self, dict):
+    @staticmethod
+    def max_key (dict):
         """ Gets the maximum key from a dictionary.
 
         Args:
@@ -39,7 +31,8 @@ class PasswordSetCharacteristics:
             output = max(output, key)
         return output
 
-    def accumulate(self, dict):
+    @classmethod
+    def accumulate (cls, dict, inverse=False):
         """ Turns a discrete count dictionary into a cumulative one.
 
         Args:
@@ -49,29 +42,51 @@ class PasswordSetCharacteristics:
         """
         total = 0
         output = {}
-        for i in range(0, self.max_key(dict) + 1):
+        keys = range(0, cls.max_key(dict) + 1)
+        if inverse:
+            range(cls.max_key(dict), -1, -1) # Invert range if needed.
+        for i in keys:
             if i in dict:
-                total += dict[i]
+                total += dict[i] # Accumulate frequencies.
             output[i] = total
         return output
 
-    def desc_accumulate(self, dict):
-        """ Turns a discrete count dictionary into a cumulative one in a descending manner.
+    @staticmethod
+    def to_num_dict (dict):
+        """ Converts a string-indexed dictionary to a numerically-indexed one.
 
         Args:
-            dict (dict): The count dictionary.
+            dict (dict): The dictionary to convert.
         Returns:
-            dict: The descending cumulative dictionary.
+            dict: The converted dictionary.
         """
-        total = 0
         output = {}
-        for i in range(self.max_key(dict), -1, -1):
-            if i in dict:
-                total += dict[i]
-            output[i] = total
+        for key, value in dict.items():
+            output[int(key)] = value
         return output
 
-    def dict(self):
+    @classmethod
+    def load (cls, file):
+        """ Loads a password set characteristics object from a file.
+
+        Args:
+            file (str): The filepath from which to load the object.
+        Returns:
+            PasswordSetCharacteristics: The loaded object.
+        """
+        with open(file) as f:
+            raw = json.load(f)
+            obj = PasswordSetCharacteristics()
+            obj.lengths = cls.to_num_dict(raw['lengths'])
+            obj.lower_counts = cls.to_num_dict(raw['lowerCounts'])
+            obj.upper_counts = cls.to_num_dict(raw['upperCounts'])
+            obj.digit_counts = cls.to_num_dict(raw['digitCounts'])
+            obj.symbol_counts = cls.to_num_dict(raw['symbolCounts'])
+            obj.class_counts = cls.to_num_dict(raw['classCounts'])
+            obj.word_counts = cls.to_num_dict(raw['wordCounts'])
+            return obj
+
+    def to_dict (self):
         """ Transforms this object into a dictionary for JSON serialization.
 
         Returns:
@@ -79,36 +94,37 @@ class PasswordSetCharacteristics:
         """
         return {
             'lengths': self.lengths,
-            'lengthsAccum': self.accumulate(self.lengths),
-            'lengthsAccumDesc': self.desc_accumulate(self.lengths),
             'lowerCounts': self.lower_counts,
-            'lowerCountsAccum': self.accumulate(self.lower_counts),
-            'lowerCountsAccumDesc': self.desc_accumulate(self.lower_counts),
             'upperCounts': self.upper_counts,
-            'upperCountsAccum': self.accumulate(self.upper_counts),
-            'upperCountsAccumDesc': self.desc_accumulate(self.upper_counts),
             'digitCounts': self.digit_counts,
-            'digitCountsAccum': self.accumulate(self.digit_counts),
-            'digitCountsAccumDesc': self.desc_accumulate(self.digit_counts),
             'symbolCounts': self.symbol_counts,
-            'symbolCountsAccum': self.accumulate(self.symbol_counts),
-            'symbolCountsAccumDesc': self.desc_accumulate(self.symbol_counts),
             'classCounts': self.class_counts,
-            'wordCounts': self.word_counts,
-            'containing': {
-                'lowers': self.num_with_lowers,
-                'uppers': self.num_with_uppers,
-                'digits': self.num_with_digits,
-                'symbols': self.num_with_symbols,
-            },
+            'wordCounts': self.word_counts
         }
 
-    def load(self, pwd, freq):
-        """ Loads a password into this password characteristics object, recording its properties.
+    def get (self, key, accum=False, inverse=False):
+        """ Gets a frequency dictionary by its key.
 
         Args:
-            pwd (str): The password to load.
-            freq (int): The frequency of the password to load.
+            key (str): The key of the frequency dictionary to get.
+            accum (bool): Whether or not to convert the frequency dictonary to cumulative frequency before returning.
+            inverse (bool): Whether to use inverse cumulative frequency.
+        Returns:
+            dict: The frequency dictionary.
+        """
+        lookup = self.to_dict()
+        if accum:
+            out = self.accumulate(lookup[key], inverse)
+            return out
+        else:
+            return lookup[key]
+
+    def add (self, pwd, freq):
+        """ Adds a password into this password characteristics object, recording its properties.
+
+        Args:
+            pwd (str): The password to add.
+            freq (int): The frequency of the password to add.
         """
         # Record password lengths.
         pwd_len = len(pwd)
@@ -151,13 +167,3 @@ class PasswordSetCharacteristics:
         if not pwd_words in self.word_counts:
             self.word_counts[pwd_words] = 0
         self.word_counts[pwd_words] += freq
-
-        # Update contains-class counts.
-        if pwd_lowers > 0:
-            self.num_with_lowers += freq
-        if pwd_uppers > 0:
-            self.num_with_uppers += freq
-        if pwd_digits > 0:
-            self.num_with_digits += freq
-        if pwd_symbols > 0:
-            self.num_with_symbols += freq

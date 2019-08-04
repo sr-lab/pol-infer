@@ -59,7 +59,7 @@ characteristics = PasswordSetCharacteristics()
 
 # Load passwords into characteristics object.
 for ind, row in csv.iterrows():
-    characteristics.load(str(row['password']), int(row['frequency']))
+    characteristics.add(str(row['password']), int(row['frequency']))
 
 # Print results as JSON.
-print(json.dumps(characteristics.dict()))
+print(json.dumps(characteristics.to_dict()))
