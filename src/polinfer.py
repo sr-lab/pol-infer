@@ -5,6 +5,8 @@ from functools import reduce
 
 import matplotlib.pyplot as plt
 
+from model.PasswordSetCharacteristics import PasswordSetCharacteristics
+
 from args import get_valued_arg, is_arg_passed, get_int_valued_arg
 
 
@@ -32,9 +34,8 @@ def to_points(dict):
     """
     points = []
     for i in range(0, max_key(dict) + 1):
-        key = str(i)
-        if key in dict:
-            points.append((i, dict[key]))
+        if i in dict:
+            points.append((i, dict[i]))
         else:
             points.append((i, 0))
     return points
@@ -45,7 +46,7 @@ def print_usage(show_help_line=False):
     Args:
         show_help_line (bool): If true, information on help flag `-h` will be printed.
     """
-    print("Usage: python polinfer.py [-hkblutxyos] <features_file>")
+    print("Usage: python polinfer.py [-hcdkblutxyos] <features_file>")
     print("Features file produced by extractfeatures.py expected.")
     if show_help_line:
         print("For extended help use '-h' option.")
@@ -57,7 +58,9 @@ def print_help():
     print_usage()
     print("Options:")
     print("\t-h: Show this help screen")
-    print("\t-k <key>: The key of the feature to use (default: lengthsAccum)")
+    print("\t-c: Cumulative frequency mode OFF (i.e. do not use cumulative frequencies)")
+    print("\t-d: Inverse cumulative frequency mode")
+    print("\t-k <key>: The key of the feature to use (default: lengths)")
     print("\t-b <limit>: The threshold to use for outlier detection")
     print("\t-l <limit>: The lower limit of the feature to use (default: 1)")
     print("\t-u <limit>: The upper limit of the feature to use (default: 20)")
@@ -81,12 +84,14 @@ if is_arg_passed('h'):
 # Get key to use to get dictionary.
 key = get_valued_arg('k')
 if key is None:
-    key = 'lengthsAccum' # Lengths (cumulative) by default.
+    key = 'lengths'
 
 # Load data file.
-raw = {}
-with open(sys.argv[-1]) as f:
-    raw = json.load(f)[key]
+data = PasswordSetCharacteristics.load(sys.argv[-1])
+
+# Cumulative frequency flags.
+cum_freq_mode = not is_arg_passed('c')
+inv_cum_freq_mode = is_arg_passed('d')
 
 # Read in outlier threshold, if passed.
 outlier_threshold = get_int_valued_arg('b')
@@ -112,11 +117,8 @@ y_label = get_valued_arg('y')
 if not y_label is None:
     plt.ylabel(y_label)
 
-# Check descent mode.
-descent_mode = is_arg_passed('d')
-
 # Convert to points.
-points = to_points(raw)
+points = to_points(data.get(key, cum_freq_mode, inv_cum_freq_mode))
 points = list(filter(lambda p: p[0] >= low_lim and p[0] <= high_lim, points)) # Enforce limits.
 print('Pulled points:', points)
 
@@ -124,8 +126,8 @@ print('Pulled points:', points)
 offset = 1
 term = 'Lower'
 
-# Reverse points and invert critical number if in descent mode.
-if descent_mode:
+# Offset needs to change if we're finding upper bounds.
+if inv_cum_freq_mode:
     offset = 0
     term = 'Upper'
 
@@ -134,7 +136,7 @@ deltas = []
 for i in range(0, len(points) - 1):
     j = points[i]
     k = points[i + 1]
-    if descent_mode:
+    if inv_cum_freq_mode:
         mult = math.inf if k[1] == 0 else j[1] / k[1]
     else:
         mult = math.inf if j[1] == 0 else k[1] / j[1]
