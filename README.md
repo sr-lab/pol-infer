@@ -40,24 +40,26 @@ Now, you'll be able to pass this file to `/src/extractfeatures.py` to generate a
 
 ```js
 {
-	"lengths": {
-		"6": 8488412,
-		"5": 1326965,
-		"9": 3949791,
+  "lengths": {
+    "1": 314,
+    "2": 1042,
+    "3": 6725,
 		// ...
-	},
-	"lengthsAccum": {
-		"0": 0,
-		"1": 314,
-		"2": 1356,
+  },
+  "lowerCounts": {
+    "0": 6329765,
+    "1": 333254,
+    "2": 449242,
+    "3": 852241,
 		// ...
-	},
-	"lowerCounts": {
-		"0": 6329765,
-		"8": 3708590,
-		"7": 4492833,
+  },
+  "upperCounts": {
+    "0": 30653712,
+    "1": 668835,
+    "2": 162895,
+    "3": 89374,
 		// ...
-	},
+  },
 	// ...
 }
 ```
@@ -71,8 +73,8 @@ python ./src/extractfeatures.py rockyou.csv > rockyou.json
 Now for the interesting bit. Using `src/polinfer.py` to infer password composition policy rules. First, let's determine that most of the passwords in the set described by `rockyou.json` were created under a policy enforcing a minimum length constraint of 5:
 
 ```bash
-python ./src/polinfer.py -k lengthsAccum ./features/rockyou.json
-# > Constraint on lengthsAccum inferred as 5.
+python ./src/polinfer.py -k lengths ./features/rockyou.json
+# > Lower constraint on lengths inferred as 5.
 ```
 
 Nice, this is backed up by existing literature (for example, see the work by [Golla and Dürmuth here](https://www.ei.ruhr-uni-bochum.de/media/mobsec/veroeffentlichungen/2018/09/10/ccsf285-finalv2.pdf)).
@@ -80,8 +82,8 @@ Nice, this is backed up by existing literature (for example, see the work by [Go
 Now, let's check for a minimum number of digits:
 
 ```bash
-python ./src/polinfer.py -k digitCountsAccum ./features/rockyou.json
-# > Constraint on digitCountsAccum unlikely to be present in policy.
+python ./src/polinfer.py -k digitCounts ./features/rockyou.json
+# > Lower constraint on digitCounts unlikely to be present in policy.
 ```
 
 This gives us the correct answer, that RockYou did not mandate a minimum number of digits in passwords.
@@ -89,10 +91,10 @@ This gives us the correct answer, that RockYou did not mandate a minimum number 
 We are similarly able to infer the policy in place for webhost (minimum length 6, at least 1 number):
 
 ```bash
-python ./src/polinfer.py -k lengthsAccum ./features/000webhost.json
-# > Constraint on lengthsAccum inferred as 5.
-python ./src/polinfer.py -k digitCountsAccum -l 0 ./features/000webhost.json
-# > Constraint on digitCountsAccum inferred as 1.
+python ./src/polinfer.py -k lengths ./features/000webhost.json
+# > Lower constraint on lengths inferred as 5.
+python ./src/polinfer.py -k digitCounts -l 0 ./features/000webhost.json
+# > Lower constraint on digitCounts inferred as 1.
 ```
 
 You can get a better idea about command-line arguments you can pass to each utility using the `-h` help flag:
