@@ -36,7 +36,20 @@ password, frequency
 ...
 ```
 
-Now, you'll be able to pass this file to `/src/extractfeatures.py` to generate a JSON file containing features of the database. For convenience, I've included some of these files under `/features` to save you doing this part yourself. Here's what these files look like:
+Now, you'll be able to pass this file to `/src/extractfeatures.py` to generate a JSON file containing features of the database. For convenience, I've included some of these files under `/features` to save you doing this part yourself:
+
+* `000webhost.json` is from [the 000webhost breach](https://www.zdnet.com/article/000webhost-hacked-13-million-customers-exposed/). This service apparently had a password composition policy in place mandating that passwords be at least length 6 with at least one letter and at least one number.
+* `linkedin.json` is from [the LinkedIn breach](https://www.wired.co.uk/article/linkedin-data-breach-find-out-included). Reported password composition policy is length 6 with no other constraints.
+* `rockyou.json` is from [the RockYou breach](https://techcrunch.com/2009/12/14/rockyou-hack-security-myspace-facebook-passwords/). Reported password composition policy is length 5 with no other constraints.
+* `xato.json` is from the [data dump compiled by Mark Burnett](https://xato.net/today-i-am-releasing-ten-million-passwords-b6278bbe7495?gi=94106d374fbb) sampled randomly from several breaches. Because this is a compound dataset, passwords here are likely to have been created under multiple different policies (or no policy at all).
+* `yahoo.json` is from the [Yahoo Voice breach](https://edition.cnn.com/2012/07/12/tech/web/yahoo-users-hacked) sampled randomly from several breaches. Reported password composition policy is length 6 with no other constraints.
+
+Some feature files created from synthetic datasets are also included. These are:
+
+* `linkedin-2class8-errors.json` is the LinkedIn dataset (see `linkedin.json`) fitlered according to a `2class8` policy (two character classes from lowercase, uppercase, digits and symbols, length at least 8), then run through `introduceerrors.py` which simulates common data formatting errors by splitting passwords along potentially problematic tokens (` ` and `,`).
+* `linkedin-2word12-padded.json` as above, but filtered according to a `2word12` policy (at least two letter sequences separated by non-letter sequences, length at least 12) and padded with the [singles.org](https://www.networkworld.com/article/2263760/exposed-web-site-a-reminder-for-use-of-multiple-passwords.html), [elitehacker](https://news.softpedia.com/news/Security-Gurus-0wned-by-Black-Hats-117934), [hak5](https://news.softpedia.com/news/Security-Gurus-0wned-by-Black-Hats-117934) and [faithwriters](https://www.forbes.com/sites/andygreenberg/2010/08/26/researcher-creates-clearinghouse-of-14-million-hacked-passwords/) datasets using `combine.py`.
+
+Here's what these files look like:
 
 ```js
 {
