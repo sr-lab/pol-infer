@@ -17,10 +17,12 @@ def print_help():
     """ Prints the full help card for the program.
     """
     print_usage()
+    print('Arguments:')
+    print('\tdumpfile: The file to introduce error into')
     print("Options:")
     print("\t-h: Show this help screen")
     print()
-    print("Input file should be in format:")
+    print("Input file should be in CSV frequency distribution format:")
     print("\tpassword, frequency, ... <- Column headers")
     print("\t\"123456\", 1, ...")
     print("\t\"password\", 18, ...")
