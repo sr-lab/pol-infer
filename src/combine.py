@@ -13,7 +13,7 @@ def print_usage(show_help_line=False):
         show_help_line (bool): If true, information on help flag `-h` will be printed.
     """
     print("Usage: python combine.py [-h] [-o <outfile>] <infile1> <infile2>")
-    print("Extracts features from a password dump formatted as a CSV file.")
+    print("Combines two password data dumps together.")
     if show_help_line:
         print("For extended help use '-h' option.")
 
@@ -22,11 +22,14 @@ def print_help():
     """ Prints the full help card for the program.
     """
     print_usage()
+    print('Arguments:')
+    print('\tinfile1: The base password data dump')
+    print('\tinfile2: The password data dump to merge in')
     print("Options:")
     print("\t-h: Show this help screen")
     print('\t-o <str>: The file in which to place output')
     print()
-    print("Input files should be in format:")
+    print("Input files should be in CSV frequency distribution format:")
     print("\tpassword, frequency, ... <- Column headers")
     print("\t\"123456\", 1, ...")
     print("\t\"password\", 18, ...")
