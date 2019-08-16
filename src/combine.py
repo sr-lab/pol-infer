@@ -13,7 +13,7 @@ def print_usage(show_help_line=False):
         show_help_line (bool): If true, information on help flag `-h` will be printed.
     """
     print("Usage: python combine.py [-h] [-o <outfile>] <infile1> <infile2>")
-    print("Extracts features from a password dump formatted as a CSV file.")
+    print("Combines two password data dumps together.")
     if show_help_line:
         print("For extended help use '-h' option.")
 
